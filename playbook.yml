@@ -1,0 +1,9 @@
+- name: check if docker is installed and install install
+  hosts: all
+  become: true
+  roles:
+    - docker_install
+    - docker_mirror_change
+    - elastic_deploy
+    - nginx_deploy
+

@@ -1,0 +1,57 @@
+services:
+  elasticsearch:
+    container_name: elastic
+    image: elasticsearch:9.0.2
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - elastic
+    environment:
+      discovery.type: 'single-node'
+      xpack.security.enabled: 'true'
+      ELASTIC_PASSWORD: 'maktab123'
+      ES_JAVA_OPTS: '-Xmx1g -Xms1g'
+    volumes:
+      - ./es_data:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+  
+  kibana:
+    container_name: kibana
+    image: kibana:9.0.2
+    restart: unless-stopped
+    networks:
+      - elastic
+      - nginx
+    depends_on:
+      -  elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+
+  logstash:
+    container_name: logstash
+    image: logstash:9.0.2
+    restart: unless-stopped
+    volumes:
+      - ./logstash-config:/usr/share/logstash/pipeline/
+    networks:
+      - elastic
+    ports:
+      - "5044:5044" # Beats input
+      - "5000:5000" # TCP input
+      - "5001:5001" # UDP input
+      - "9600:9600" # Logstash monitoring API
+    environment:
+      - LS_JAVA_OPTS=-Xms512m -Xmx512m
+
+networks:
+  elastic:
+    external: false
+  nginx:
+    external: true

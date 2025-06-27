@@ -1,0 +1,15 @@
+- name: Ensure /opt/elk directory exists
+  file:
+    path: /opt/elk
+    state: directory
+
+- name: Copy ELK stack files to /opt/elk
+  copy:
+    src: .
+    dest: /opt/elk/
+    mode: preserve
+
+- name: Run ELK stack with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: /opt/elk
+    state: present

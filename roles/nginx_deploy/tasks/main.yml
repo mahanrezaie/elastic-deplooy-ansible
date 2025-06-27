@@ -1,0 +1,25 @@
+- name: Check if /opt/nginx exists
+  stat:
+    path: /opt/nginx
+  register: nginx_folder
+
+- name: Remove /opt/nginx if it exists
+  file:
+    path: /opt/nginx
+    state: absent
+  when: nginx_folder.stat.exists
+
+- name: Create Nginx project folder
+  file:
+    path: /opt/nginx
+    state: directory
+
+- name: Copy files content including compose and certs and configs
+  copy:
+    src: .
+    dest: /opt/nginx/
+
+- name: Start Nginx container
+  community.docker.docker_compose_v2:
+    project_src: /opt/nginx
+    state: present
